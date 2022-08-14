@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { PostMessage } from "./postMessage.js";
+import mongoose from "mongoose";
 export const getRouter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const postMessages = yield PostMessage.find();
@@ -45,5 +46,32 @@ export const createPost = (req, res) => __awaiter(void 0, void 0, void 0, functi
     catch (error) {
         res.status(400).json({ message: error.message });
     }
+});
+export const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id))
+        return res.status(400).json({ message: "Id not valid" });
+    const post = yield PostMessage.findById(id);
+    if (!post)
+        return res.status(404).json({ message: "Post not found" });
+    const updateData = yield req.body;
+    post.title = updateData.title;
+    post.message = updateData.message;
+    post.creator = updateData.creator;
+    post.tags = new mongoose.Types.Array(...updateData.tags);
+    post.title = updateData.title;
+    post.selectedFile = updateData.selectedFile;
+    post.likeCount = updateData.likeCount;
+    yield PostMessage.findByIdAndUpdate(post._id, post);
+    res.status(200).json({
+        createdAt: post.createdAt,
+        creator: post.creator,
+        id: post._id.toString(),
+        likeCount: post.likeCount,
+        message: post.message,
+        selectedFile: post.selectedFile,
+        tags: post.tags,
+        title: post.title
+    });
 });
 //# sourceMappingURL=postsController.js.map
